@@ -15,6 +15,9 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  ssr: {
+    external: ['@prisma/client', '@prisma/adapter-pg', 'pg', 'better-auth'],
+  },
 })
 
 export default config

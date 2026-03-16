@@ -1,87 +1,101 @@
+import ThemeToggle from '#/components/ThemeToggle'
 import { createFileRoute } from '@tanstack/react-router'
+import { authClient } from '#/lib/auth-client'
+import { Button } from '#/components/ui/button'
 
 export const Route = createFileRoute('/')({ component: App })
 
 function App() {
+  const { data: session, isPending } = authClient.useSession()
+
+  const handleSignIn = async () => {
+    await authClient.signIn.social({
+      provider: 'google',
+      callbackURL: '/',
+    })
+  }
+
+  const handleSignOut = async () => {
+    await authClient.signOut()
+  }
+
   return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.32),transparent_66%)]" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.18),transparent_66%)]" />
-        <p className="island-kicker mb-3">TanStack Start Base Template</p>
-        <h1 className="display-title mb-5 max-w-3xl text-4xl leading-[1.02] font-bold tracking-tight text-[var(--sea-ink)] sm:text-6xl">
-          Start simple, ship quickly.
-        </h1>
-        <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
-          This base starter intentionally keeps things light: two routes, clean
-          structure, and the essentials you need to build from scratch.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/about"
-            className="rounded-full border border-[rgba(50,143,151,0.3)] bg-[rgba(79,184,178,0.14)] px-5 py-2.5 text-sm font-semibold text-[var(--lagoon-deep)] no-underline transition hover:-translate-y-0.5 hover:bg-[rgba(79,184,178,0.24)]"
-          >
-            About This Starter
-          </a>
-          <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-[rgba(23,58,64,0.2)] bg-white/50 px-5 py-2.5 text-sm font-semibold text-[var(--sea-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[rgba(23,58,64,0.35)]"
-          >
-            Router Guide
-          </a>
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      <main className="w-full max-w-md space-y-8 rounded-2xl border border-border bg-card p-8 shadow-xl">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            Joja Cat
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Welcome to the future of Joja.
+          </p>
         </div>
-      </section>
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          [
-            'Type-Safe Routing',
-            'Routes and links stay in sync across every page.',
-          ],
-          [
-            'Server Functions',
-            'Call server code from your UI without creating API boilerplate.',
-          ],
-          [
-            'Streaming by Default',
-            'Ship progressively rendered responses for faster experiences.',
-          ],
-          [
-            'Tailwind Native',
-            'Design quickly with utility-first styling and reusable tokens.',
-          ],
-        ].map(([title, desc], index) => (
-          <article
-            key={title}
-            className="island-shell feature-card rise-in rounded-2xl p-5"
-            style={{ animationDelay: `${index * 90 + 80}ms` }}
-          >
-            <h2 className="mb-2 text-base font-semibold text-[var(--sea-ink)]">
-              {title}
-            </h2>
-            <p className="m-0 text-sm text-[var(--sea-ink-soft)]">{desc}</p>
-          </article>
-        ))}
-      </section>
+        <div className="flex flex-col items-center space-y-4">
+          {isPending ? (
+            <div className="flex items-center space-x-2 text-muted-foreground">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <span>Checking session...</span>
+            </div>
+          ) : session ? (
+            <div className="flex w-full flex-col items-center space-y-6">
+              <div className="flex flex-col items-center space-y-2">
+                {session.user.image && (
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name}
+                    className="h-20 w-20 rounded-full border-2 border-primary shadow-lg"
+                  />
+                )}
+                <div className="text-center">
+                  <h2 className="text-xl font-semibold text-foreground">
+                    {session.user.name}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {session.user.email}
+                  </p>
+                </div>
+              </div>
 
-      <section className="island-shell mt-8 rounded-2xl p-6">
-        <p className="island-kicker mb-2">Quick Start</p>
-        <ul className="m-0 list-disc space-y-2 pl-5 text-sm text-[var(--sea-ink-soft)]">
-          <li>
-            Edit <code>src/routes/index.tsx</code> to customize the home page.
-          </li>
-          <li>
-            Update <code>src/components/Header.tsx</code> and{' '}
-            <code>src/components/Footer.tsx</code> for brand links.
-          </li>
-          <li>
-            Add routes in <code>src/routes</code> and tweak visual tokens in{' '}
-            <code>src/styles.css</code>.
-          </li>
-        </ul>
-      </section>
-    </main>
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                className="w-full transition-all hover:bg-destructive hover:text-white"
+              >
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <div className="w-full space-y-4">
+              <Button
+                onClick={handleSignIn}
+                className="flex w-full items-center justify-center space-x-2 py-6 text-lg font-medium shadow-lg hover:translate-y-[-2px] hover:shadow-xl active:translate-y-0"
+              >
+                <svg
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                  focusable="false"
+                  data-prefix="fab"
+                  data-icon="google"
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 488 512"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
+                  ></path>
+                </svg>
+                <span>Sign in with Google</span>
+              </Button>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   )
 }
